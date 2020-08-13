@@ -2,11 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+MODEL/yolo/config/
 
 .vscode/
-
+*.mp4
+*.webm
+*.weights
 # C extensions
-*.so
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
