@@ -1,6 +1,6 @@
 from julesTk import app
 from CONTROLLER.MainController import MainController
-__author__ = "Chen JinSong <jinsong.chen@siemens.com>"
+__author__ = "Chen JinSong <jingsong@foxmail.com>"
 
 class PackingAI(app.Application):
 
@@ -15,6 +15,9 @@ class PackingAI(app.Application):
         return self.get_controller("mainCtrl")
 
     def _start(self):
+        self.root.attributes("-topmost", True)
+        self.root.title("Packing AI")
+        self.root.geometry("1000x525")
         self.mainCtrl.start()
 
 
