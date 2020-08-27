@@ -1,21 +1,34 @@
 from julesTk import controller
+from julesTk.utils.observe import Observer
+from julesTk.utils import modals
 from tkinter.messagebox import showerror
+from Common.AppConfigSingleton import AppConfigSingleton
 from VIEW.ProcessingView import ProcessingView
 from VIEW.ValidationView import ValidationView
-from Common.AppConfigSingleton import AppConfigSingleton
-from julesTk.utils import modals
+
+
+from MODEL.VisionDetectionModel import VisionDetectionModel
 
 __author__ = "Chen JinSong <jingsong@foxmail.com>"
 
-class MainController(controller.ViewController):
+class MainController(controller.Controller, Observer):
     
-    def __init__(self, parent, view=None):
+    def __init__(self, parent, view=None, model=None):
         super(MainController, self).__init__(parent=parent)
         self.__appConfig = AppConfigSingleton()
         self.__pView = ProcessingView(self.parent_view, self)
         self.__vView = ValidationView(self.parent_view, self)
-        self.set_view(self.__vView)
+        self.set_view(self.__pView)
+        self.__vModel = VisionDetectionModel()
+        self.__vModel.register_observer(self)
+        self.__vModel.start()
     
+    def update(self, observable):
+        if isinstance(observable, VisionDetectionModel) and isinstance(self.view, ProcessingView):
+            imgRaw = observable.fetchDetectedPicture()
+            self.view.widgets["picLable"].config(image=imgRaw)
+            self.view.widgets["picLable"].image = imgRaw
+
     def switchToValidationView(self):
         self.view.hide()
         self.set_view(self.__vView)
@@ -52,4 +65,8 @@ class MainController(controller.ViewController):
             firstEntry = False
         if errFlg is False:
             self.switchToProcessingView()
+
+    def _stop(self):
+        self.__vModel.stopFlg = True
+        self.__vModel.join(0.5)
             

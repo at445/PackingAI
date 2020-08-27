@@ -1,5 +1,7 @@
 from julesTk import view
 from tkinter import *
+from cv2 import cv2
+
 from Common.AppConfigSingleton import AppConfigSingleton
 
 __author__ = "Chen JinSong <jingsong@foxmail.com>"
@@ -39,6 +41,3 @@ class ProcessingView(view.View):
         # dummy, just for better appearance
         TxtpLabel = view.tk.Label(mRight, bg="white")
         mRight.add(TxtpLabel, height=50, width=200, sticky = 'N')
-
-    def clicked(self):
-        self.controller.ProcessingClick()
