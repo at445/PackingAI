@@ -17,7 +17,7 @@ class PackingAI(app.Application):
     def _start(self):
         self.root.attributes("-topmost", True)
         self.root.title("Packing AI")
-        self.root.geometry("1000x525")
+        self.root.geometry("1070x535")
         self.mainCtrl.start()
 
 

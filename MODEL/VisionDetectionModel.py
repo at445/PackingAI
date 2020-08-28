@@ -20,7 +20,7 @@ class VisionDetectionModel(model.Model, threading.Thread):
         self.__visDetctRstSingleton = VisionDetecedResultSingleton()
 
         self.netMain = darknet.load_net_custom(self.__appConfigSingleton.yoloConfigPath.encode(
-            "ascii"), self.__appConfigSingleton.yoloWeightPath.encode("ascii"), 0, 1)  # batch size = 1
+            "ascii"), self.__appConfigSingleton.yoloWeightPath.encode("ascii"), 0, 1)  
         self.metaMain = darknet.load_meta(self.__appConfigSingleton.yoloMetaPath.encode("ascii"))
 
         #camera open and configuration
