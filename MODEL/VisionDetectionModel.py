@@ -8,6 +8,7 @@ from MODEL.yolo import darknet
 
 from Common.AppConfigSingleton import AppConfigSingleton
 from Common.VisionDetecedSingleton import VisionDetecedSingleton
+__author__ = "Chen JinSong <jingsong@foxmail.com>"
 
 class VisionDetectionModel(model.Model, threading.Thread):
     def __init__(self):

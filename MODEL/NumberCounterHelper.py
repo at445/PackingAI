@@ -1,6 +1,9 @@
 from Common.Constants import const
 from Common.AppConfigSingleton import AppConfigSingleton
 from Common.VisionDetecedSingleton import VisionDetecedSingleton
+import time
+__author__ = "Chen JinSong <jingsong@foxmail.com>"
+
 class ItemControlRef():
     def __init__(self, name, maxCnt):
         if not isinstance(name, str):
@@ -85,6 +88,7 @@ class NumberCounterHelper():
 
             temp = self.__visDetctRstSingleton.popFromPooling()
             if temp is None:
+                time.sleep(0.03)
                 break
             
             for item1 in temp:

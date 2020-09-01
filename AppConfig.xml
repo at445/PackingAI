@@ -2,23 +2,15 @@
 <AppConfiguration>
     <Debug>on</Debug>
     <PatchValidation>
-        <Interval>50</Interval>
+        <Interval>5</Interval>
         <Picture>temp.jpg</Picture>
         <Item>
-            <Name>说明书</Name>
-            <Value>12345678</Value>
-        </Item>
-        <Item>
             <Name>CD</Name>
-            <Value>12345678</Value>
+            <Value>12</Value>
         </Item>
         <Item>
-            <Name>附件袋</Name>
-            <Value>123456</Value>
-        </Item>
-        <Item>
-            <Name>HMI设备</Name>
-            <Value>123456</Value>
+            <Name>Instruction</Name>
+            <Value>12</Value>
         </Item>
     </PatchValidation>
     <YOLO_Config>
@@ -30,28 +22,16 @@
         <Name>Scanner</Name>
     </VisionIgnoreds>
     <SessionInfo>
-        <!--StartPoints>
-            <Item>
-                <Name>Unpacked box</Name>
-                <CountRef>10</CountRef>
-            </Item>
-        </StartPoints-->
         <Detections>
             <Item>
                 <Name>CD</Name>
-                <CountRef>10</CountRef>
+                <CountRef>20</CountRef>
             </Item>
             <Item>
                 <Name>Instruction</Name>
                 <CountRef>10</CountRef>
             </Item>
         </Detections>
-        <!--EndPoints>
-            <Item>
-                <Name>标签</Name>
-                <CountRef>5</CountRef>
-            </Item>
-        </EndPoints-->
     </SessionInfo>
 </AppConfiguration>
 

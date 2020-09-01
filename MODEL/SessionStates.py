@@ -3,6 +3,7 @@ import time
 from Common.AppConfigSingleton import AppConfigSingleton
 from Common.Constants import const
 from MODEL.NumberCounterHelper import NumberCounterHelper
+__author__ = "Chen JinSong <jingsong@foxmail.com>"
 
 class SessionStates():
     def ___init__(self):
@@ -34,24 +35,75 @@ class SessionStarted(SessionStates):
         from MODEL.StateMachineModel import StateMachineModel
         if not isinstance(obj, StateMachineModel):
             raise ValueError("Expected a StateMachineModel value, not {}".format(type(obj)))
-        self.__adjuster.reset()
-        while 1:
-            if obj.isAllItemStatusFinished() is True:
-                self.__adjuster.reset()
-                break
-            for item in self.__adjuster.caculate():
-                if item.Flag == const.FINISHED:
-                    obj.setItemStatusByName(item.name)
-                    obj.notify_observers()
-                if item.Flag == const.MULTI_OBJ_ERROR:
-                    obj.setItemStatusByName(item.name, const.ITEM_ERROR_COLOR)
-                    obj.errorMessage = "检测到多个" +  item.name
-                    obj.changeSessionState(SessionError())
-                    obj.notify_observers()
-                    return
+
+        if obj.isAllItemStatusFinished() is True:
+            self.__adjuster.reset()
+            obj.changeSessionState(SessionFinished())
+            obj.notify_observers()
+
+        for item in self.__adjuster.caculate():
+            if item.Flag == const.FINISHED:
+                obj.setItemStatusByName(item.name)
+                obj.notify_observers()
+            if item.Flag == const.MULTI_OBJ_ERROR:
+                obj.setItemStatusByName(item.name, const.ITEM_ERROR_COLOR)
+                obj.errorMessage = "检测到多个" +  item.name
+                obj.changeSessionState(SessionError())
+                obj.notify_observers()
+
+        
+
+class SessionFinished(SessionStates):
+    
+    _instance_lock = threading.Lock()
+
+    def __init__(self):
+        super(SessionFinished, self).__init__()
+        pass
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(SessionFinished, "_instance"):
+            with SessionFinished._instance_lock:
+                if not hasattr(SessionFinished, "_instance"):
+                    SessionFinished._instance = object.__new__(cls)  
+        return SessionFinished._instance
+    
+    def Action(self, obj):
+        from MODEL.StateMachineModel import StateMachineModel
+        if not isinstance(obj, StateMachineModel):
+            raise ValueError("Expected a StateMachineModel value, not {}".format(type(obj)))
+        
         obj.cleanAllItemStatus()
+        print("send finish signal with FID {}".format(obj.fidInputString))
+        #send "SIT+" to BCR
+        # TBD --- 
+        # -------
+        # -------
+        #bRet = sendToBCR("SIT+")
+        print("success!!")
+
+        bRet = True
+        if bRet is False:
+            obj.errorMessage = "发送结束信号 “SIT+” 失败 FID：" +  obj.fidInputString
+            obj.changeSessionState(SessionError())
+            obj.notify_observers()
+
+        print("send print label signal with FID {}".format(obj.fidInputString))
+        #send "Sikit+FID" to BCR
+        # TBD --- 
+        # -------
+        # -------
+        #bRet = sendToBCR("Sikit+FID")
+        print("success!!")
+        bRet = True
+        if bRet is False:
+            obj.errorMessage = "发送打印标签信号“Sikit+FID” 失败 FID：" +  obj.fidInputString
+            obj.changeSessionState(SessionError())
+            obj.notify_observers()
+
         obj.changeSessionState(SessionStoped())
         obj.notify_observers()
+        obj.cleanFidInput()
 
 class SessionStoped(SessionStates):
     _instance_lock = threading.Lock()
@@ -91,7 +143,7 @@ class SessionStoped(SessionStates):
             #bRet = sendToBCR("SIT+Fid")
             bRet = True
             if bRet is False:
-                obj.errorMessage = "发送 “SIT+FID” 失败 FID：" +  obj.fidInputString
+                obj.errorMessage = "发送开始信号 “SIT+FID” 失败 FID：" +  obj.fidInputString
                 obj.changeSessionState(SessionError())
                 obj.notify_observers()
             else:
@@ -101,8 +153,6 @@ class SessionStoped(SessionStates):
             obj.errorMessage = "snCheck 失败 FID：" +  obj.fidInputString
             obj.changeSessionState(SessionError())
             obj.notify_observers()
-
-        obj.cleanFidInput()
 
 class SessionError(SessionStates):
     _instance_lock = threading.Lock()

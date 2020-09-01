@@ -46,7 +46,7 @@ class ProcessingView(view.View):
             self.__checkItemColorBuf[item[0]] = const.ITEM_RESET_COLOR
         btn = view.tk.Button(mRightUp, font=("黑体", 10), text = "手动确认",command = self.buttonClicked)
         mRightUp.add(btn,height=50, width=150, sticky = 'S')
-        btn.pack_forget()
+        btn['state'] = view.tk.DISABLED
         self.add_widget("manualButton",btn)
 
         TxtpLabel = view.tk.Label(mRightDown, text="请输入产品FID：", bg="white", anchor="sw")
@@ -59,9 +59,15 @@ class ProcessingView(view.View):
 
     def enterKeyPressEvent(self, event):
          self.controller.fidInputHandling(self,self.widgets["fidEntry"].get())
+    
+    def disableManualSetButton(self):
+        self.widgets["manualButton"]['state'] = view.tk.DISABLED
+
+    def enableManualSetButton(self):
+        self.widgets["manualButton"]['state'] = view.tk.NORMAL
 
     def buttonClicked(self):
-        self.controller.checkVersion()
+        self.controller.manualSetPass(self)
 
     def changeCheckItemBg(self, key, value):
         if not isinstance(value, str):
@@ -74,3 +80,4 @@ class ProcessingView(view.View):
             return
         self.widgets[key]["bg"] = value
         self.__checkItemColorBuf[key] = value
+        

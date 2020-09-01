@@ -33,7 +33,6 @@ class VisionDetecedSingleton(ThreadSafeObject):
     def pushToPooling(self, result):
         if not isinstance(result,list):
             raise ValueError("Expected a list value, not {}".format(type(result)))
-        print(result)
         self.__detectedResult.append(result)
 
     @ThreadSafeObject.thread_safe

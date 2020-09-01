@@ -1,10 +1,11 @@
 from julesTk import model
 import threading
-from MODEL.SessionStates import SessionStates, SessionStarted, SessionStoped, SessionError
+from MODEL.SessionStates import SessionStates, SessionStarted, SessionFinished, SessionStoped, SessionError
 from Common.AppConfigSingleton import AppConfigSingleton
 from Common.Constants import const
 from julesTk import ThreadSafeObject
 from enum import Enum
+__author__ = "Chen JinSong <jingsong@foxmail.com>"
 
 class APPSTUS(Enum):
     SESSION_STARTED = 1
@@ -64,6 +65,9 @@ class StateMachineModel(model.Model, threading.Thread):
         elif isinstance(obj, SessionError):
             self.__sessionStates = SessionError()
             self.States = APPSTUS.SESSION_ERROR
+        elif isinstance(obj, SessionFinished):
+            self.__sessionStates = SessionFinished()
+            self.States = APPSTUS.SESSION_STARTED
         else:
             raise ValueError("Expected a subclass SessionStates value, not {}".format(type(obj)))
 
