@@ -3,11 +3,13 @@ from julesTk.utils.observe import Observer
 from julesTk.utils import modals
 from tkinter.messagebox import showerror
 from Common.AppConfigSingleton import AppConfigSingleton
+from Common.Constants import const
 from VIEW.ProcessingView import ProcessingView
 from VIEW.ValidationView import ValidationView
 
 
 from MODEL.VisionDetectionModel import VisionDetectionModel
+from MODEL.StateMachineModel import StateMachineModel, APPSTUS
 
 __author__ = "Chen JinSong <jingsong@foxmail.com>"
 
@@ -22,12 +24,41 @@ class MainController(controller.Controller, Observer):
         self.__vModel = VisionDetectionModel()
         self.__vModel.register_observer(self)
         self.__vModel.start()
+
+        self.__sModel = StateMachineModel()
+        self.__sModel.register_observer(self)
+        self.__sModel.start()
+        self.__lastStatus = APPSTUS.SESSION_STOPED
     
     def update(self, observable):
+        
         if isinstance(observable, VisionDetectionModel) and isinstance(self.view, ProcessingView):
             imgRaw = observable.fetchDetectedPicture()
             self.view.widgets["picLable"].config(image=imgRaw)
             self.view.widgets["picLable"].image = imgRaw
+        if isinstance(observable, StateMachineModel) and isinstance(self.view, ProcessingView):
+            if self.__lastStatus != observable.States:
+                if observable.States is APPSTUS.SESSION_ERROR:
+                    self.__vModel.pauseFlg = True
+                    self.view.widgets["statusLabel"].config(fg=const.ERROR_COLOR)
+                    self.view.widgets["statusLabel"].config(text=const.ERROR_STRING)
+                    showerror("错误", "详细信息" + observable.errorMessage)
+                    observable.cleanErrorMessage()
+                elif observable.States is APPSTUS.SESSION_STOPED:
+                    self.__vModel.pauseFlg = True
+                    self.view.widgets["statusLabel"].config(fg=const.NOT_START_COLOR)
+                    self.view.widgets["statusLabel"].config(text=const.NOT_START_STRING)
+                    #self.view.changeCheckItemBg("CD", const.ITEM_FINISHED_COLOR)
+                elif observable.States is APPSTUS.SESSION_STARTED:
+                    self.__vModel.pauseFlg = False
+                    self.view.widgets["statusLabel"].config(fg=const.PROCESSING_COLOR)
+                    self.view.widgets["statusLabel"].config(text=const.PROCESSING_STRING)
+
+            for item in observable.itemStatusMap.values():
+                self.view.changeCheckItemBg(item.name, item.color)
+            
+            self.__lastStatus = observable.States
+
 
     def switchToValidationView(self):
         self.view.hide()
@@ -39,7 +70,9 @@ class MainController(controller.Controller, Observer):
         self.set_view(self.__pView)
         self.view.show()
     
-    def switchFocus(self):
+    def switchFocus(self, obj):
+        if not isinstance(obj, ValidationView):
+            raise ValueError("switch focus on view which is not ValidationView")
         focusedItem = self.view.focus_get()
         focusFud = False
         for item in self.view.widgets.values():
@@ -48,7 +81,9 @@ class MainController(controller.Controller, Observer):
                 break
             if item  is focusedItem:
                 focusFud = True
-    def checkVersion(self):
+    def checkVersion(self, obj):
+        if not isinstance(obj, ValidationView):
+            raise ValueError("check version on view which is not ValidationView")
         errFlg = False
         for refPair in self.__appConfig.patchValidationList:
             widget = self.view.get_widget(refPair[0])
@@ -65,8 +100,15 @@ class MainController(controller.Controller, Observer):
             firstEntry = False
         if errFlg is False:
             self.switchToProcessingView()
+    
+    def fidInputHandling(self, obj, content):
+        if not isinstance(obj, ProcessingView):
+            raise ValueError("dealing fid input on view which is not ProcessingView")
+        self.__sModel.fidInputString = content
 
     def _stop(self):
         self.__vModel.stopFlg = True
         self.__vModel.join(0.5)
+        self.__sModel.stopFlg = True
+        self.__sModel.join(0.5)
             

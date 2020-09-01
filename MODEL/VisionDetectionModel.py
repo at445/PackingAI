@@ -7,26 +7,24 @@ from PIL import Image,ImageTk
 from MODEL.yolo import darknet
 
 from Common.AppConfigSingleton import AppConfigSingleton
-from Common.VisionDetecedResultSingleton import VisionDetecedResultSingleton
+from Common.VisionDetecedSingleton import VisionDetecedSingleton
 
 class VisionDetectionModel(model.Model, threading.Thread):
     def __init__(self):
         super(VisionDetectionModel, self).__init__()
-
-        self.__mutex2 = threading.Lock()
         self.daemon = True
 
         self.__appConfigSingleton = AppConfigSingleton()
-        self.__visDetctRstSingleton = VisionDetecedResultSingleton()
+        self.__visDetctRstSingleton = VisionDetecedSingleton()
 
         self.netMain = darknet.load_net_custom(self.__appConfigSingleton.yoloConfigPath.encode(
             "ascii"), self.__appConfigSingleton.yoloWeightPath.encode("ascii"), 0, 1)  
         self.metaMain = darknet.load_meta(self.__appConfigSingleton.yoloMetaPath.encode("ascii"))
 
         #camera open and configuration
-        #self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(0)
         #self.cap = cv2.VideoCapture("MODEL/yolo/test.mp4")
-        self.cap = cv2.VideoCapture("MODEL/yolo/test.webm")
+        #self.cap = cv2.VideoCapture("MODEL/yolo/test.webm")
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         self.cap.set(cv2.CAP_PROP_FPS,30)
@@ -36,7 +34,7 @@ class VisionDetectionModel(model.Model, threading.Thread):
         self.darknet_image = darknet.make_image(darknet.network_width(self.netMain),
                                        darknet.network_height(self.netMain),3)
         self.__stopFlg = False
-        self.__pauseFlg = False
+        self.__pauseFlg = True
         
     @property
     def stopFlg(self):
@@ -51,6 +49,7 @@ class VisionDetectionModel(model.Model, threading.Thread):
         return self.__pauseFlg
 
     @pauseFlg.setter
+    @model.Model.thread_safe
     def pauseFlg(self, value):
         self.__pauseFlg = value
 
@@ -59,11 +58,6 @@ class VisionDetectionModel(model.Model, threading.Thread):
             if self.__stopFlg == True:
                 print("Vision Detection model stopped")
                 break
-
-            if self.__pauseFlg == True:
-                print("Vision Detection has paused")
-                time.sleep(0.3)
-                continue
             
             ret, frame_read = self.cap.read()
             if ret:
@@ -72,7 +66,11 @@ class VisionDetectionModel(model.Model, threading.Thread):
                                         interpolation=cv2.INTER_LINEAR)
                                         
                 darknet.copy_image_from_bytes(self.darknet_image, frame_resized.tobytes())
-                detections = darknet.detect_image(self.netMain, self.metaMain, self.darknet_image, thresh=0.9)
+                if self.pauseFlg == True:
+                    detections = []
+                else:
+                    detections = darknet.detect_image(self.netMain, self.metaMain, self.darknet_image, thresh=0.9)
+
                 if len(detections) is not 0:
                     self.__visDetctRstSingleton.pushToPooling(detections)
                     ign_items = self.__appConfigSingleton.visionIgnoredListFixed

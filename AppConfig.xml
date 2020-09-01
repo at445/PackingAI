@@ -30,40 +30,28 @@
         <Name>Scanner</Name>
     </VisionIgnoreds>
     <SessionInfo>
-        <StartPoints>
+        <!--StartPoints>
             <Item>
                 <Name>Unpacked box</Name>
                 <CountRef>10</CountRef>
             </Item>
-        </StartPoints>
+        </StartPoints-->
         <Detections>
-            <Item>
-                <Name>HMI设备</Name>
-                <CountRef>10</CountRef>
-            </Item>
             <Item>
                 <Name>CD</Name>
                 <CountRef>10</CountRef>
             </Item>
             <Item>
-                <Name>附件袋</Name>
-                <CountRef>5</CountRef>
-            </Item>
-            <Item>
-                <Name>说明书</Name>
-                <CountRef>10</CountRef>
-            </Item>
-            <Item>
-                <Name>Far</Name>
+                <Name>Instruction</Name>
                 <CountRef>10</CountRef>
             </Item>
         </Detections>
-        <EndPoints>
+        <!--EndPoints>
             <Item>
                 <Name>标签</Name>
                 <CountRef>5</CountRef>
             </Item>
-        </EndPoints>
+        </EndPoints-->
     </SessionInfo>
 </AppConfiguration>
 

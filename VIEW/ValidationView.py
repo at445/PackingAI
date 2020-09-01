@@ -37,7 +37,7 @@ class ValidationView(view.View):
             entry.bind("<Return>", self.enterKeyPressEvent)
 
     def enterKeyPressEvent(self, event):
-        self.controller.switchFocus()
+        self.controller.switchFocus(self)
 
     def buttonClicked(self):
-        self.controller.checkVersion()
+        self.controller.checkVersion(self)

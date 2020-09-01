@@ -52,12 +52,12 @@ class AppConfigSingleton(object):
         
         SESSION = collection.getElementsByTagName("SessionInfo")[0]
 
-        startInfo = SESSION.getElementsByTagName("StartPoints")[0]
-        for items in startInfo.getElementsByTagName("Item"):
-            name = items.getElementsByTagName("Name")[0]
-            countRef = items.getElementsByTagName("CountRef")[0]
-            contet = (name.childNodes[0].data, countRef.childNodes[0].data)
-            self.__SessionStartPoint.append(contet)
+        #startInfo = SESSION.getElementsByTagName("StartPoints")[0]
+        #for items in startInfo.getElementsByTagName("Item"):
+        #    name = items.getElementsByTagName("Name")[0]
+        #    countRef = items.getElementsByTagName("CountRef")[0]
+        #    contet = (name.childNodes[0].data, countRef.childNodes[0].data)
+        #    self.__SessionStartPoint.append(contet)
 
         detectInfo = SESSION.getElementsByTagName("Detections")[0]
         for items in detectInfo.getElementsByTagName("Item"):
@@ -66,12 +66,12 @@ class AppConfigSingleton(object):
             contet = (name.childNodes[0].data, countRef.childNodes[0].data)
             self.__SessionContent.append(contet)
 
-        endInfo = SESSION.getElementsByTagName("EndPoints")[0]
-        for items in endInfo.getElementsByTagName("Item"):
-            name = items.getElementsByTagName("Name")[0]
-            countRef = items.getElementsByTagName("CountRef")[0]
-            contet = (name.childNodes[0].data, countRef.childNodes[0].data)
-            self.__SessionEndPoint.append(contet)
+        #endInfo = SESSION.getElementsByTagName("EndPoints")[0]
+        #for items in endInfo.getElementsByTagName("Item"):
+        #    name = items.getElementsByTagName("Name")[0]
+        #    countRef = items.getElementsByTagName("CountRef")[0]
+        #    contet = (name.childNodes[0].data, countRef.childNodes[0].data)
+        #    self.__SessionEndPoint.append(contet)
 
     @property
     def yoloConfigPath(self):
