@@ -48,16 +48,17 @@ class MainController(controller.Controller, Observer):
                 self.view.disableManualSetButton()
                 self.view.widgets["statusLabel"].config(fg=const.NOT_START_COLOR)
                 self.view.widgets["statusLabel"].config(text=const.NOT_START_STRING)
-
-                self.__circleTime += 1
-                if self.__circleTime % int(self.__appConfig.patchValidationInterval) == 0:
-                    self.switchToValidationView()
                 #self.view.changeCheckItemBg("CD", const.ITEM_FINISHED_COLOR)
-            elif observable.States is APPSTUS.SESSION_STARTED:
+            elif observable.States is APPSTUS.SESSION_PROCESSING:
                 self.__vModel.pauseFlg = False
                 self.view.enableManualSetButton()
                 self.view.widgets["statusLabel"].config(fg=const.PROCESSING_COLOR)
                 self.view.widgets["statusLabel"].config(text=const.PROCESSING_STRING)
+            elif observable.States is APPSTUS.SESSION_FINISHED:
+                self.__vModel.pauseFlg = True
+                self.__circleTime += 1
+                if self.__circleTime % int(self.__appConfig.patchValidationInterval) == 0:
+                    self.switchToValidationView()
 
     def switchToValidationView(self):
         self.view.hide()

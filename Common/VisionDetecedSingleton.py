@@ -48,6 +48,8 @@ class VisionDetecedSingleton(ThreadSafeObject):
     def setIgnoreContent(self, name):
         if not isinstance(name,str):
             raise ValueError("Expected a string value, not {}".format(type(name)))
+        if name in self.__ignoreItem:
+            return
         self.__ignoreItem.append(name)
     
     @ThreadSafeObject.thread_safe

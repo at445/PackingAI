@@ -109,6 +109,7 @@ class NumberCounterHelper():
                 if item.Flag == const.NOT_FINISHED:
                     if item.accumulativeCnt >= item.maxCount:
                         item.Flag = const.FINISHED
+                        self.__visDetctRstSingleton.setIgnoreContent(item.name)
                 if item.errCnt >= const.ERROR_TOLERANCE:
                     item.Flag = const.MULTI_OBJ_ERROR
                     StopFlg = True
@@ -122,3 +123,4 @@ class NumberCounterHelper():
             info.accumulativeCnt = 0
             info.errCnt = 0
             self.__visDetctRstSingleton.clearPooling()
+            self.__visDetctRstSingleton.clearIgnoreContent()

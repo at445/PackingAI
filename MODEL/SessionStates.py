@@ -15,21 +15,21 @@ class SessionStates():
     def TransAction(self):
         raise NotImplementedError
 
-class SessionStarted(SessionStates):
+class SessionProcessing(SessionStates):
     
     _instance_lock = threading.Lock()
 
     def __init__(self):
-        super(SessionStarted, self).__init__()
+        super(SessionProcessing, self).__init__()
         self.__adjuster = NumberCounterHelper()
         pass
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(SessionStarted, "_instance"):
-            with SessionStarted._instance_lock:
-                if not hasattr(SessionStarted, "_instance"):
-                    SessionStarted._instance = object.__new__(cls)  
-        return SessionStarted._instance
+        if not hasattr(SessionProcessing, "_instance"):
+            with SessionProcessing._instance_lock:
+                if not hasattr(SessionProcessing, "_instance"):
+                    SessionProcessing._instance = object.__new__(cls)  
+        return SessionProcessing._instance
     
     def Action(self, obj):
         from MODEL.StateMachineModel import StateMachineModel
@@ -37,9 +37,9 @@ class SessionStarted(SessionStates):
             raise ValueError("Expected a StateMachineModel value, not {}".format(type(obj)))
 
         if obj.isAllItemStatusFinished() is True:
-            self.__adjuster.reset()
-            obj.changeSessionState(SessionFinished())
+            obj.changeSessionState(SessionPreFinish())
             obj.notify_observers()
+            self.__adjuster.reset()
 
         for item in self.__adjuster.caculate():
             if item.Flag == const.FINISHED:
@@ -50,23 +50,24 @@ class SessionStarted(SessionStates):
                 obj.errorMessage = "检测到多个" +  item.name
                 obj.changeSessionState(SessionError())
                 obj.notify_observers()
+                self.__adjuster.reset()
 
         
 
-class SessionFinished(SessionStates):
+class SessionPreFinish(SessionStates):
     
     _instance_lock = threading.Lock()
 
     def __init__(self):
-        super(SessionFinished, self).__init__()
+        super(SessionPreFinish, self).__init__()
         pass
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(SessionFinished, "_instance"):
-            with SessionFinished._instance_lock:
-                if not hasattr(SessionFinished, "_instance"):
-                    SessionFinished._instance = object.__new__(cls)  
-        return SessionFinished._instance
+        if not hasattr(SessionPreFinish, "_instance"):
+            with SessionPreFinish._instance_lock:
+                if not hasattr(SessionPreFinish, "_instance"):
+                    SessionPreFinish._instance = object.__new__(cls)  
+        return SessionPreFinish._instance
     
     def Action(self, obj):
         from MODEL.StateMachineModel import StateMachineModel
@@ -87,6 +88,7 @@ class SessionFinished(SessionStates):
             obj.errorMessage = "发送结束信号 “SIT+” 失败 FID：" +  obj.fidInputString
             obj.changeSessionState(SessionError())
             obj.notify_observers()
+            return
 
         print("send print label signal with FID {}".format(obj.fidInputString))
         #send "Sikit+FID" to BCR
@@ -100,6 +102,30 @@ class SessionFinished(SessionStates):
             obj.errorMessage = "发送打印标签信号“Sikit+FID” 失败 FID：" +  obj.fidInputString
             obj.changeSessionState(SessionError())
             obj.notify_observers()
+            return
+
+        obj.changeSessionState(SessionFinish())
+        obj.notify_observers()
+
+class SessionFinish(SessionStates):
+    
+    _instance_lock = threading.Lock()
+
+    def __init__(self):
+        super(SessionFinish, self).__init__()
+        pass
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(SessionFinish, "_instance"):
+            with SessionFinish._instance_lock:
+                if not hasattr(SessionFinish, "_instance"):
+                    SessionFinish._instance = object.__new__(cls)  
+        return SessionFinish._instance
+    
+    def Action(self, obj):
+        from MODEL.StateMachineModel import StateMachineModel
+        if not isinstance(obj, StateMachineModel):
+            raise ValueError("Expected a StateMachineModel value, not {}".format(type(obj)))
 
         obj.changeSessionState(SessionStoped())
         obj.notify_observers()
@@ -147,12 +173,13 @@ class SessionStoped(SessionStates):
                 obj.changeSessionState(SessionError())
                 obj.notify_observers()
             else:
-                obj.changeSessionState(SessionStarted())
+                obj.changeSessionState(SessionProcessing())
                 obj.notify_observers()
         else:
             obj.errorMessage = "snCheck 失败 FID：" +  obj.fidInputString
             obj.changeSessionState(SessionError())
             obj.notify_observers()
+            
 
 class SessionError(SessionStates):
     _instance_lock = threading.Lock()
@@ -177,4 +204,5 @@ class SessionError(SessionStates):
         obj.cleanAllItemStatus()
         obj.changeSessionState(SessionStoped())
         obj.notify_observers()
+        obj.cleanFidInput()
 

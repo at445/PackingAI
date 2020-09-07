@@ -55,6 +55,7 @@ class VisionDetectionModel(model.Model, threading.Thread):
         self.__pauseFlg = value
 
     def run(self):
+        ign_items = self.__appConfigSingleton.visionIgnoredListFixed
         while(self.cap.isOpened()):
             if self.__stopFlg == True:
                 print("Vision Detection model stopped")
@@ -74,7 +75,11 @@ class VisionDetectionModel(model.Model, threading.Thread):
 
                 if len(detections) is not 0:
                     self.__visDetctRstSingleton.pushToPooling(detections)
-                    ign_items = self.__appConfigSingleton.visionIgnoredListFixed
+                    
+                    for item in self.__visDetctRstSingleton.fetchIgnoreContent():
+                        if item not in ign_items:
+                            ign_items.append(item)
+
                     image = self.cvDrawBoxes(detections, frame_resized, ign_items)
 
                     image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -102,9 +107,10 @@ class VisionDetectionModel(model.Model, threading.Thread):
     def cvDrawBoxes(self, detections, img, ign):
         for detection in detections:
             #print(detection[0].decode())
-            if detection[0].decode() in ign:
-                #print(detection[0].decode() + " is ignored")
-                continue
+            if self.__appConfigSingleton.debugFlg == "OFF":
+                if detection[0].decode() in ign:
+                    #print(detection[0].decode() + " is ignored")
+                    continue
             x, y, w, h = detection[2][0],\
                 detection[2][1],\
                 detection[2][2],\
@@ -113,11 +119,20 @@ class VisionDetectionModel(model.Model, threading.Thread):
                 float(x), float(y), float(w), float(h))
             pt1 = (xmin, ymin)
             pt2 = (xmax, ymax)
-            cv2.rectangle(img, pt1, pt2, (0, 255, 0), 1)
-            cv2.putText(img,
-                        detection[0].decode() +
-                        " [" + str(round(detection[1] * 100, 2)) + "]",
-                        (pt1[0], pt1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                        [0, 255, 0], 2)
+            if detection[0].decode() in ign:
+                cv2.rectangle(img, pt1, pt2, (0, 0, 255), 1)
+                cv2.putText(img,
+                            detection[0].decode() +
+                            " [" + str(round(detection[1] * 100, 2)) + "]",
+                            (pt1[0], pt1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                            [0, 0, 255], 2)
+            else:
+                cv2.rectangle(img, pt1, pt2, (0, 255, 0), 1)
+                cv2.putText(img,
+                            detection[0].decode() +
+                            " [" + str(round(detection[1] * 100, 2)) + "]",
+                            (pt1[0], pt1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                            [0, 255, 0], 2)
+       
         return img
         

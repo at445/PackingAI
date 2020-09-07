@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AppConfiguration>
-    <Debug>on</Debug>
+    <Debug>OFF</Debug>
     <PatchValidation>
         <Interval>5</Interval>
         <Picture>temp.jpg</Picture>

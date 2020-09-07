@@ -1,6 +1,6 @@
 from julesTk import model
 import threading
-from MODEL.SessionStates import SessionStates, SessionStarted, SessionFinished, SessionStoped, SessionError
+from MODEL.SessionStates import SessionStates, SessionProcessing, SessionPreFinish, SessionStoped, SessionError, SessionFinish
 from Common.AppConfigSingleton import AppConfigSingleton
 from Common.Constants import const
 from julesTk import ThreadSafeObject
@@ -8,9 +8,10 @@ from enum import Enum
 __author__ = "Chen JinSong <jingsong@foxmail.com>"
 
 class APPSTUS(Enum):
-    SESSION_STARTED = 1
+    SESSION_PROCESSING = 1
     SESSION_STOPED = 2
     SESSION_ERROR = 3
+    SESSION_FINISHED = 4
 
 class CheckItemRef():
     def __init__(self, name, color):
@@ -56,18 +57,20 @@ class StateMachineModel(model.Model, threading.Thread):
             self.__itemStatusMap[item[0]] = CheckItemRef(item[0], const.ITEM_RESET_COLOR)
 
     def changeSessionState(self, obj):
-        if isinstance(obj, SessionStarted):
-            self.__sessionStates = SessionStarted()
-            self.States = APPSTUS.SESSION_STARTED
+        if isinstance(obj, SessionProcessing):
+            self.__sessionStates = SessionProcessing()
+            self.States = APPSTUS.SESSION_PROCESSING
         elif isinstance(obj, SessionStoped):
             self.__sessionStates = SessionStoped()
             self.States = APPSTUS.SESSION_STOPED
         elif isinstance(obj, SessionError):
             self.__sessionStates = SessionError()
             self.States = APPSTUS.SESSION_ERROR
-        elif isinstance(obj, SessionFinished):
-            self.__sessionStates = SessionFinished()
-            self.States = APPSTUS.SESSION_STARTED
+        elif isinstance(obj, SessionPreFinish):
+            self.__sessionStates = SessionPreFinish()
+        elif isinstance(obj, SessionFinish):
+            self.__sessionStates = SessionFinish()
+            self.States = APPSTUS.SESSION_FINISHED
         else:
             raise ValueError("Expected a subclass SessionStates value, not {}".format(type(obj)))
 
